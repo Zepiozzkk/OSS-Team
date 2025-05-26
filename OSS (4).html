@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>날씨 정보 앱</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .weather-clear { background-color: #fef9c3; }     /* 맑음 - 연노랑 */
+    .weather-clouds { background-color: #e0e7ff; }     /* 흐림 - 연보라 */
+    .weather-rain { background-color: #d1d5db; }       /* 비 - 회색 */
+    .weather-snow { background-color: #f0f9ff; }       /* 눈 - 연파랑 */
+    .weather-default { background-color: #cbd5e1; }    /* 기본 */
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 transition-colors duration-500" id="app">
+
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 space-y-4 text-center">
+    <h1 class="text-2xl font-bold">🌦️ 날씨 정보 앱</h1>
+
+    <input id="cityInput" type="text" placeholder="도시 입력" class="w-full px-4 py-2 border rounded-md" />
+    <button onclick="searchCity()" class="bg-blue-500 text-white px-4 py-2 rounded-md mt-2">검색</button>
+
+    <div id="weather" class="space-y-2 mt-4 text-gray-700"></div>
+  </div>
+
+  <script>
+    const API_KEY = '87362b1762ed0f343516e4d960a2d417';
+
+    // 날씨에 따라 배경색 변경
+    function updateBackground(weatherMain) {
+      const app = document.getElementById("app");
+      app.className = "min-h-screen flex items-center justify-center p-4 transition-colors duration-500";
+
+      switch (weatherMain.toLowerCase()) {
+        case 'clear':
+          app.classList.add('weather-clear');
+          break;
+        case 'clouds':
+          app.classList.add('weather-clouds');
+          break;
+        case 'rain':
+        case 'drizzle':
+        case 'thunderstorm':
+          app.classList.add('weather-rain');
+          break;
+        case 'snow':
+          app.classList.add('weather-snow');
+          break;
+        default:
+          app.classList.add('weather-default');
+      }
+    }
+
+    // 도시로 날씨 검색
+    function searchCity() {
+      const city = document.getElementById("cityInput").value;
+      if (!city) return;
+
+      fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric&lang=kr`)
+        .then(res => res.json())
+        .then(data => {
+          const name = data.name;
+          const temp = data.main.temp;
+          const desc = data.weather[0].description;
+          const icon = data.weather[0].icon;
+          const main = data.weather[0].main;
+
+          // 배경색 업데이트
+          updateBackground(main);
+
+          // 날씨 보여주기
+          document.getElementById("weather").innerHTML = `
+            <h2 class="text-xl font-semibold">📍 ${name}</h2>
+            <img src="https://openweathermap.org/img/wn/${icon}@2x.png" alt="${desc}" class="mx-auto w-16" />
+            <p class="text-lg">${desc}</p>
+            <p class="text-lg">🌡️ ${temp}°C</p>
+          `;
+        })
+        .catch(() => {
+          alert("도시를 찾을 수 없습니다.");
+        });
+    }
+  </script>
+</body>
+</html>
